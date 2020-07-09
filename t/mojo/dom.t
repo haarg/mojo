@@ -2912,4 +2912,54 @@ EOF
   is $dom->at('#api_key_5 .expiration')->text, 'never',                     'right text';
 };
 
+subtest 'Auto-closing MathML' => sub {
+  my $dom = Mojo::DOM->new(<<EOF);
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div>
+      <p>
+        <math>
+          <semantics>
+            <annotation-xml encoding="text/html">
+              <div>hi</div>
+            </annotation-xml>
+          </semantics>
+        </math>
+      </p>
+    </div>
+  </body>
+</html>
+EOF
+  is $dom->find('body > div > p > math > semantics > annotation-xml > div')->size, 1,
+    'HTML embedded in MathML does not auto-close outer p';
+};
+
+subtest 'Auto-closing SVG' => sub {
+  my $dom = Mojo::DOM->new(<<EOF);
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div>
+      <p>
+        <svg>
+          <foreignObject>
+            <div xmlns="http://www.w3.org/1999/xhtml">hi</div>
+          </foreignObject>
+        </svg>
+      </p>
+    </div>
+  </body>
+</html>
+EOF
+  is $dom->find('body > div > p > svg > foreignObject > div')->size, 1,
+    'HTML embedded in SVG does not auto-close outer p';
+};
+
 done_testing();
